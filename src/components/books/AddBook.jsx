@@ -1,13 +1,13 @@
 import React, {useEffect} from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { addBook } from "../../store/api/BookSlice";
+
+import { useAddBookMutation } from "../../store/api/BookSlice";
 
 const AddBook = () => {
 
-  const dispatch = useDispatch();
+  const [ addBook ] = useAddBookMutation();
 
   const navigate = useNavigate();
 
@@ -25,17 +25,15 @@ const AddBook = () => {
   });
 
   const handleSubmit = (values) => {
-
-    dispatch(addBook({
+    addBook({
       title: values.title,
       author: values.author,
       price: values.price,
-        image: values.image,
-    })).then(() => {
-
-             navigate("/");
-        
-    });
+      image: values.image,
+    }).unwrap().then(() => {
+      navigate("/");
+    }
+    );
   };
 
   return (

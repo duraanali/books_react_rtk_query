@@ -1,63 +1,57 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
-import axios from "axios";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const initialState = {
-    books: [],
-    status: "idle",
-    error: null
-};
+const BASE_URL = "http://localhost:8000";
 
-export const fetchBooks = createAsyncThunk("book/fetchBooks", async () => {
-    const response = await axios.get("http://localhost:8000/books");
-    return response.data;
+export const bookSlice = createApi({
+  reducerPath: "bookApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: BASE_URL,
+  }),
+  tagTypes: ["Books"],
+  endpoints: (builder) => ({
+
+    // Fetch Notes
+    fetchBooks: builder.query({
+      query: () => {
+        return {
+          url: "books",
+          method: "GET",
+        };
+      },
+      providesTags: ["Books"],
+    }),
+
+    // Add Note
+    addBook: builder.mutation({
+      query: (newBook) => ({
+        url: "books",
+        method: "POST",
+        body: newBook,
+      }),
+      invalidatesTags: ["Books"],
+    }),
+
+    // Edit Note
+    editBook: builder.mutation({
+      query: ({ bookId, updatedBook }) => ({
+        url: `books/${bookId}`,
+        method: "PUT",
+        body: updatedBook,
+      }),
+      invalidatesTags: ["Books"],
+    }),
+
+    // Delete Note
+    deleteBook: builder.mutation({
+        query: (bookId) => ({
+            url: `books/${bookId}`,
+            method: "DELETE",
+        }),
+        invalidatesTags: ["Books"],
+    }),
+  }),
 });
 
-export const addBook = createAsyncThunk("book/addBook", async (newBook) => {
-    const response = await axios.post("http://localhost:8000/books", newBook);
-    return response.data;
-});
-
-export const editBook = createAsyncThunk("book/editBook", async ({bookId, updatedBook}) => {
-    const response = await axios.put(`http://localhost:8000/books/${bookId}`, updatedBook);
-    return response.data;
-});
-
-export const deleteBook = createAsyncThunk("book/deleteBook", async (bookId) => {
-    await axios.delete(`http://localhost:8000/books/${bookId}`);
-    return bookId;
-});
-
-export const bookSlice = createSlice({
-    name: "book",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-        builder.addCase(fetchBooks.pending, (state) => {
-            state.status = "loading";
-            state.error = null;
-        }).addCase(fetchBooks.fulfilled, (state, action) => {
-            state.status = "succeeded";
-            state.books = action.payload;
-        }).addCase(fetchBooks.rejected, (state, action) => {
-            state.status = "failed";
-            state.error = action.error.message;
-        }).addCase(addBook.fulfilled, (state, action) => {
-            state.books.push(action.payload);
-        }).addCase(editBook.fulfilled, (state, action) => {
-            const {bookId, updatedBook} = action.payload;
-            const existingBook = state.books.find((book) => book.id === bookId);
-            if (existingBook) {
-                existingBook.title = updatedBook.title;
-                existingBook.author = updatedBook.author;
-                existingBook.price = updatedBook.price;
-                existingBook.image = updatedBook.image;
-            }
-        }).addCase(deleteBook.fulfilled, (state, action) => {
-            const bookId = action.payload;
-            state.books = state.books.filter((book) => book.id !== bookId);
-        });
-        
-    }
-});
-
+export const { useFetchBooksQuery, useAddBookMutation, useEditBookMutation, useDeleteBookMutation } = bookSlice;
+console.log(bookSlice)
 export default bookSlice.reducer;

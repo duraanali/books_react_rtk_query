@@ -1,21 +1,14 @@
 import React, {useEffect} from "react";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { deleteBook, fetchBooks } from "../store/api/BookSlice";
+import {useFetchBooksQuery, useDeleteBookMutation} from "../store/api/BookSlice";
 
 function Home() {
 
-  const books = useSelector((state) => state.book.books);
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchBooks());
-  }, [dispatch]);
-
+  const { data: books = [] } = useFetchBooksQuery();
+  const [ deleteBook ] = useDeleteBookMutation();
 
   const handleBookDelete = (bookId) => {
-    dispatch(deleteBook(bookId));
+    deleteBook(bookId).unwrap();
   };
 
   return (

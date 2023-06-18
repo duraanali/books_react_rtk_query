@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { editBook, fetchBooks } from "../../store/api/BookSlice";
+import { useEditBookMutation, useFetchBooksQuery} from "../../store/api/BookSlice";
 
 const EditBook = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const navigate = useNavigate();
   const [currentBook, setCurrentBook] = useState({});
 
+  const [ editBook ] = useEditBookMutation();
+  const { data: books } = useFetchBooksQuery();
 
   const initialValues = {
     title: currentBook.title,
@@ -20,17 +21,14 @@ const EditBook = () => {
 
   const params = useParams();
 
-  const books = useSelector((state) => state.book.books);
-
   useEffect(() => {
-    dispatch(fetchBooks())
-  }, [dispatch]);
-
-  useEffect(() => {
+      if (books && books.length > 0){
         const book = books.find((book) => book.id === Number(params.id));
         if (book) {
-        setCurrentBook(book);
-        }
+          setCurrentBook(book);
+          }
+      }
+
     }, [books, params.id]);
 
   const validationSchema = Yup.object({
@@ -40,12 +38,10 @@ const EditBook = () => {
   });
 
   const handleSubmit = (values) => {
-    dispatch(
-      editBook({
-        bookId: Number(params.id),
-        updatedBook: values
-      })
-    ).then(() => {
+    editBook({
+      bookId: params.id,
+      updatedBook: values
+    }).unwrap().then(() => {
       navigate("/");
     });
   };

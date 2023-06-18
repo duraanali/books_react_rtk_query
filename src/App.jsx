@@ -23,7 +23,7 @@ function App() {
     </header>
     
     <Routes>
-       <Route path="/books/edit_book/:id" element={<EditBook />} />
+      <Route path="/books/edit_book/:id" element={<EditBook />} />
        <Route path="/books/add_book" element={<AddBook />} />
       <Route path="/" element={<Home />} />
     </Routes>
